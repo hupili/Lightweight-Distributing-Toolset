@@ -15,6 +15,12 @@ my $name = $ARGV[0] ;
 my %task = () ;
 
 my $desc = $dir_description . "/" . $name ;
+
+if ( ! -e $desc ){
+	print STDERR "can not find '$name' in '$dir_description'\n" ;
+	exit(-1) ;
+}
+
 my $cmd_exec = `cat $desc/desc | grep "exec" | awk -F":" '{print \$2}'` ;
 chomp($cmd_exec) ;
 

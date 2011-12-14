@@ -103,6 +103,11 @@ for my $key(keys %$ref_task){
 					$ref_task->{$key}->{"time_start"} = get_datestr() ; 
 				}
 
+				#if one task succeed, wait a few seconds
+				#this is to let the process run fully 
+				#before we deploy new process on this machine
+				sleep 5 ;
+
 				last ;
 			}	
 		}
