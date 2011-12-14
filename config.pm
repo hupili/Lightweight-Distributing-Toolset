@@ -20,9 +20,6 @@ $dir_execute
 our $dir_task = "task" ;
 our $dir_description = "description" ;
 
-our $myuser = "i5270u4" ;
-our $test = "aa" ;
-
 our %h_limit = (
 	max_cpu_day => 1100, 
 	max_cpu_night => 1100, 
