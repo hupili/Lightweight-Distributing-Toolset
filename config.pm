@@ -30,6 +30,9 @@ our %h_limit = (
 our $fn_execute = "$Bin/$Script" ;
 our $dir_execute = $Bin ;
 
+#used for monitor, important....
+our $myuser = "plhu" ;
+
 our @a_host = () ;
 our %h_host = () ;
 my $fn_hostlist = "host.list" ;
