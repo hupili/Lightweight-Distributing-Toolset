@@ -52,6 +52,7 @@ for my $key(keys %$ref_task){
 		}
 		#print $max_cpu, ",", $max_cpu_me, "\n" ;
 		#print $hour ;
+		my $find = 0 ; #any available machine?
 		for my $mkey(shuffle(keys %$ref_machine)){
 			my $m = $ref_machine->{$mkey} ;
 			#print Dumper($m) ;	
@@ -59,6 +60,7 @@ for my $key(keys %$ref_task){
 			if ( $m->{"cpu"} < $max_cpu && $m->{"$myuser"} < $max_cpu_me ){
 				#print $m, "\n" ;
 				print "=== found available machine:\n" ;
+				$find = 1 ;
 				print Dumper($m) ;				
 
 				my $hostname = $mkey ;
@@ -109,7 +111,12 @@ for my $key(keys %$ref_task){
 				sleep 5 ;
 
 				last ;
-			}	
+			} # if cpu
+		} # for all machine
+		if ( ! $find ){
+			#if we can not find available machine for this task. 
+			#there is no need to check for other task
+			last ; #end new running
 		}
 	} # if status ...
 }
