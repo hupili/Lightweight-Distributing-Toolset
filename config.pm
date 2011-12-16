@@ -21,10 +21,10 @@ our $dir_task = "task" ;
 our $dir_description = "description" ;
 
 our %h_limit = (
-	max_cpu_day => 1100, 
-	max_cpu_night => 1100, 
-	max_cpu_me_day => 1100, 
-	max_cpu_me_night => 1100, 
+	max_cpu_day => 1000, 
+	max_cpu_night => 1000, 
+	max_cpu_me_day => 1000, 
+	max_cpu_me_night => 1000, 
 ) ;
 
 our $fn_execute = "$Bin/$Script" ;
