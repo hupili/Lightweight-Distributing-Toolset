@@ -1,5 +1,57 @@
 This is a lightweight distributing toolset, managed by HU, Pili
 
+>> Important Notice
+
+This repository is still under development. Please use it at your
+own risk. At least bear the following issues in mind:
+1. Write and test correct 'run.sh', 'kill.sh' before you start. 
+   This toolset is originally planed for my own use only. I know 
+   how to make things behave as they should. You're advised to 
+   read the forthcoming detailed guide document first. 
+2. Anyone who are interested to try it out, please drop me a message
+   first(optional). I'll note the message in the wiki page for my
+   own reference. The number of users may influence how much energy 
+   I spend on this project in the future. 
+
 >> Motivation
 
+Those toolset was developed during my course project of IERG5270/CUHK, 
+Advanced Topics in P2P Network. The course project involves large amount
+of simulation using PDNS. Manual configuration, run, collecting result, 
+and monitoring are time consuming. Other mature distributed solutions
+like Hadoop are large elephants which are not proper for only a few 
+machines. Another limit is that, our department server only allocates 
+5G for each postgraduate, and we don't have root privilage to set up 
+all required configurations in a lower level. 
 
+This toolset aims at:
+1. Only depends on standard Linux tools: ssh, scp, perl, bash, cron. 
+2. Support decouple-able applications. For communication intensive 
+   applications, please turn to HPC...
+3. Serve as meta tool for building your own environment. You'll find 
+   functions are divided using very small granularity in this project. 
+   I just want to trade some performance for flexibility. 
+
+>> Citation
+
+Anyone who are inspired by this project are welcome to use it 
+int their own study. Please cite this page properly. One suggested
+bibliograph entry is:
+----
+Pili Hu, 2011, Lightweight Distributing Toolset, https://github.com/hupili/Lightweight-Distributing-Toolset
+----
+One suggested BibTeX entry is:
+----
+@MISC{hu2011-cd2hop,
+	author = {Hu Pili},
+	title = {Lightweight Distributing Toolset},
+	howpublished = {https://github.com/hupili/Lightweight-Distributing-Toolset},
+	month = {11},
+	year = {2011},
+	note = {General Purpose Lightweight Distributing Toolset},
+}
+----
+
+>> Contact
+
+HU, Pili: http://personal.ie.cuhk.edu.hk/~hpl011/
