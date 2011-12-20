@@ -42,7 +42,7 @@ Pili Hu, 2011, Lightweight Distributing Toolset, https://github.com/hupili/Light
 ----
 One suggested BibTeX entry is:
 ----
-@MISC{hu2011-cd2hop,
+@MISC{hu2011-ldt,
 	author = {Hu Pili},
 	title = {Lightweight Distributing Toolset},
 	howpublished = {https://github.com/hupili/Lightweight-Distributing-Toolset},
