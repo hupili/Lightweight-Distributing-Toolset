@@ -1,0 +1,7 @@
+exec : ./myrun.sh
+kill : ./kill.sh
+d_fetch : output
+
+---
+
+A sample of task description
