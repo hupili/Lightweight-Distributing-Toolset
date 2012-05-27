@@ -7,6 +7,15 @@ use Data::Dumper ;
 use Storable ;
 use List::Util ("shuffle", "sum") ;
 
+my $mylock = "lock/update.pl.lock" ;
+#==== check lock to avoid multiple update.pl running====
+if ( -f $mylock ){
+	print STDERR "update.pl.lock exists! exit..\n" ;
+	exit(-1) ;
+}
+
+`echo \`date\` > $mylock` ;
+
 #==== load task record file ===
 if ( ! -e "storable.task.data" ){
 	#system("touch storable.task.data") ;
@@ -199,5 +208,8 @@ for my $key(keys %$ref_task){
 print "=== current task data:\n" ;
 print Dumper($ref_task) ;
 store $ref_task, 'storable.task.data' ;
+
+#==== unlock 
+`rm -f $mylock` ;
 
 exit 0 ;
