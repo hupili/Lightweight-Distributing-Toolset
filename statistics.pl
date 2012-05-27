@@ -10,6 +10,7 @@ my $ARGC = @ARGV ;
 
 #"cmd", "user", "pcpu", "rss", "pid"
 
+my $ref_task = retrieve 'storable.task.data' ;
 my $ref_peer = retrieve 'storable.mon.data' ;
 my %h_peer = %{$ref_peer} ;
 
@@ -33,8 +34,24 @@ for my $peer(keys %h_peer){
 	}
 }
 
+for my $p(values %$ref_task){
+	my $m = $p->{"machine"} ;	
+	if ( ! defined($m) ){
+		next ; #should be a new task without an assigned machine
+	}
+	#print "test:$m\n" ;
+	if ( ! defined($h_machine{$m}->{"dtask"}) ){
+		$h_machine{$m}->{"dtask"} = 1 ; 
+	} else {
+		$h_machine{$m}->{"dtask"} ++ ; 
+	}
+}
+
 for my $m(keys %h_machine){
 	$h_machine{$m}->{"machine"} = $m ;
+	if ( ! defined($h_machine{$m}->{"dtask"}) ){
+		$h_machine{$m}->{"dtask"} = 0 ; 
+	}
 }
 
 #print Dumper(\%h_user) ;

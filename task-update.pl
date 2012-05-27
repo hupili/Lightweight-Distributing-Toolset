@@ -42,13 +42,16 @@ for my $key(keys %$ref_task){
 		my $hour = substr($cur_time, 7, 2) ;
 		my $max_cpu = 0 ;
 		my $max_cpu_me = 0 ;
+		my $max_dtask = 0 ; 
 		if ( $hour >= 23 || $hour <= 8 ) {
 			#night !!!! oh yeah~ I can launch more task
 			$max_cpu = $h_limit{"max_cpu_night"} ;
 			$max_cpu_me = $h_limit{"max_cpu_me_night"} ;
+			$max_dtask = $h_limit{"max_dtask_night"} ;
 		} else {
 			$max_cpu = $h_limit{"max_cpu_day"} ;
 			$max_cpu_me = $h_limit{"max_cpu_me_day"} ;
+			$max_dtask = $h_limit{"max_dtask_day"} ;
 		}
 		#print $max_cpu, ",", $max_cpu_me, "\n" ;
 		#print $hour ;
@@ -57,7 +60,10 @@ for my $key(keys %$ref_task){
 			my $m = $ref_machine->{$mkey} ;
 			#print Dumper($m) ;	
 			#check if this machine is available ;
-			if ( $m->{"cpu"} < $max_cpu && $m->{"$myuser"} < $max_cpu_me ){
+			if ( $m->{"cpu"} < $max_cpu 
+				&& $m->{"$myuser"} < $max_cpu_me 
+				&& $m->{"dtask"} < $max_dtask){
+
 				#print $m, "\n" ;
 				print "=== found available machine:\n" ;
 				$find = 1 ;
@@ -104,6 +110,12 @@ for my $key(keys %$ref_task){
 					$ref_task->{$key}->{"machine"} = $hostname ;
 					$ref_task->{$key}->{"time_start"} = get_datestr() ; 
 				}
+
+				#statistics.pl communicate with current script 
+				#using the following storable file. 
+				#this ugly architecrure should be modifed 
+				#in the future 
+				store $ref_task, 'storable.task.data' ;
 
 				#if one task succeed, wait a few seconds
 				#this is to let the process run fully 
