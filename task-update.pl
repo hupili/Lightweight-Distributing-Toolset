@@ -142,7 +142,12 @@ for my $key(keys %$ref_task){
 				"$dir_task/" . 
 				join(".", $cur_task{"name"}, $cur_task{"time"}, $cur_task{"uuid"}) ;
 			my $dir_remote = $uuid ;
-			$ret1 = system qq(./get.pl $machine $dir_remote $dir_local/result) ;
+			my $subdir = "" ;
+			if ( defined $cur_task{"d_fetch"} ) {
+				$subdir = $cur_task{"d_fetch"} ;
+				#$subdir =~ s/\s//g ;
+			}
+			$ret1 = system qq(./get.pl $machine $dir_remote/$subdir $dir_local/result) ;
 			print "fetch result: $ret1\n" ;
 		}
 

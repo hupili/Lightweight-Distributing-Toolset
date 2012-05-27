@@ -23,6 +23,13 @@ if ( ! -e $desc ){
 
 my $cmd_exec = `cat $desc/desc | grep "exec" | awk -F":" '{print \$2}'` ;
 chomp($cmd_exec) ;
+$cmd_exec =~ s/\s//g ;
+my $cmd_kill = `cat $desc/desc | grep "kill" | awk -F":" '{print \$2}'` ;
+chomp($cmd_kill) ;
+$cmd_kill =~ s/\s//g ;
+my $d_fetch = `cat $desc/desc | grep "d_fetch" | awk -F":" '{print \$2}'` ;
+chomp($d_fetch) ;
+$d_fetch =~ s/\s//g ;
 
 #my $datestr = `date +\%y\%m\%d-\%H\%M\%S-\%s` ;
 #chomp($datestr) ;
@@ -33,8 +40,10 @@ chomp($uuid) ;
 
 $task{"name"} = $name ;
 $task{"exec"} = $cmd_exec ;
+$task{"kill"} = $cmd_kill ;
 $task{"uuid"} = $uuid ;
 $task{"time"} = $datestr ;
+$task{"d_fetch"} = $d_fetch ;
 
 my $dir_new = "$dir_task.new/$name.$datestr.$uuid" ;
 
