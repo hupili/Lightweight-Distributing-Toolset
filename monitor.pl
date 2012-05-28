@@ -8,6 +8,9 @@ use Storable ;
 my $ARGC = @ARGV ;
 #($ARGC == 1) or die("$0 {cmd}\n") ;
 
+#available peers
+my @a_available = () ;
+
 #remote execute and paraphraze 
 my %h_peer = () ;
 `./execute-all.pl "ps ax o user,pcpu,rss,pid,cmd" > tmp.monitor` ;
@@ -26,7 +29,10 @@ for (@a_ps){
 		next ;
 	}
 	#print $line, "\n" ;
-	if ( $line =~ /\[$cur_peer\]\[end\]/ ){
+	if ( $line =~ /\[$cur_peer\]\[end:(\d+)\]/ ){
+		if ( $1 eq 0 ){
+			push @a_available, $cur_peer ;
+		}
 		next ;
 	}
 	#print $line, "\n" ;
@@ -50,5 +56,6 @@ for (@a_ps){
 #====
 #print Dumper(\%h_peer) ;
 store \%h_peer, 'storable.mon.data' ;
+store \@a_available, 'storable.mon.available' ;
 
 exit 0 ;

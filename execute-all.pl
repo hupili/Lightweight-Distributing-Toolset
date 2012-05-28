@@ -16,8 +16,8 @@ for (@a_host){
 	my $hostname = $h{"hostname"} ;
 	my $home = $h{"home"} ;
 	print "[$hostname][begin]\n" ;
-	system qq( ssh $hostname "cd $home; $cmd" ) ;
-	print "[$hostname][end]\n" ;
+	my $ret = system qq( ssh $hostname "cd $home; $cmd" ) ;
+	print "[$hostname][end:$ret]\n" ;
 }
 
 exit 0 ;

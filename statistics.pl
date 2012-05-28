@@ -10,15 +10,18 @@ my $ARGC = @ARGV ;
 
 #"cmd", "user", "pcpu", "rss", "pid"
 
-my $ref_task = retrieve 'storable.task.data' ;
+my $ref_available = retrieve 'storable.mon.available' ; 
 my $ref_peer = retrieve 'storable.mon.data' ;
 my %h_peer = %{$ref_peer} ;
+
+my $ref_task = retrieve 'storable.task.data' ;
 
 my %h_user = () ;
 my %h_machine = () ;
 
 for my $peer(keys %h_peer){
 	$h_machine{$peer}->{"$myuser"} = 0 ;
+	$h_machine{$peer}->{"available"} = 0 ;
 	for my $record(@{$h_peer{$peer}}){
 		$h_user{$record->{"user"}}->{"task"} ++ ;	
 		$h_user{$record->{"user"}}->{"cpu"} += $record->{"pcpu"} ;	
@@ -32,6 +35,10 @@ for my $peer(keys %h_peer){
 			$h_machine{$peer}->{"$myuser"} += $record->{"pcpu"} ;
 		}
 	}
+}
+
+for my $m(@$ref_available){
+	$h_machine{$m}->{"available"} = 1 ;
 }
 
 for my $p(values %$ref_task){
