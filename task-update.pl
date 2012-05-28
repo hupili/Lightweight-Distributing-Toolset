@@ -69,7 +69,8 @@ for my $key(keys %$ref_task){
 			my $m = $ref_machine->{$mkey} ;
 			#print Dumper($m) ;	
 			#check if this machine is available ;
-			if ( $m->{"cpu"} < $max_cpu 
+			if ($m->{"available"} eq 1 
+				&& $m->{"cpu"} < $max_cpu 
 				&& $m->{"$myuser"} < $max_cpu_me 
 				&& $m->{"dtask"} < $max_dtask){
 
@@ -150,6 +151,13 @@ for my $key(keys %$ref_task){
 		my $uuid = $cur_task{"uuid"} ;
 		my $home = $h_host{$machine}->{"home"} ;
 		my $working = "$home/$uuid" ;
+
+		my $ref_machine = retrieve 'storable.stat.machine' ;
+		if ( $ref_machine->{$machine}->{"available"} eq 0 ){
+			#the machine becomes unavailable when the task is running. 
+			#TODO: mark the task as killed
+			next ;
+		}
 		
 		#my $ret = system qq(./execute.pl $machine "./tools/check.sh $home/$uuid") ;
 		my $ret = `./execute.pl $machine "./tools/check.sh $home/$uuid"` ;
@@ -186,10 +194,12 @@ for my $key(keys %$ref_task){
 	} 
 }
 
-#==== check finished tasks
+#==== check finished/killed tasks
 for my $key(keys %$ref_task){
 	my %cur_task = %{$ref_task->{$key}} ;
-	if ( $cur_task{"status"} eq "finish" ){
+	if ( $cur_task{"status"} eq "finish" 
+	 || $cur_task{"status"} eq "killed" 
+	){
 		my $dir_local = 
 			"$dir_task/" . 
 			join(".", $cur_task{"name"}, $cur_task{"time"}, $cur_task{"uuid"}) ;
