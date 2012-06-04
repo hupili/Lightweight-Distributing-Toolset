@@ -25,3 +25,9 @@ Here's a piece of interesting work:
 The bashreduce looks more lightweighted than the current tool... 
 LWT has more functionality but can learn the way of handling 
 muti-machine communications from that project. esp. ssh + netcat. 
+
+2012060x
+----
+
+The multiporcess eventually work. But the implementation is really ugly..
+I don't quite like it...
