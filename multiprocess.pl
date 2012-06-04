@@ -5,8 +5,11 @@
 #The interface to distribute linux commands 
 #locally using fork()
 
-use strict;
+use strict ;
 use POSIX ;
+use Proc::ProcessTable ;
+
+our $_kill_signal = 9 ;
 
 our $_fatal = 1 ;
 our $_warning = 2 ;
@@ -40,6 +43,15 @@ my $line_no = 0 ;
 sub print_log{
 	my ($level, $message) = @_ ;
 	($_output_level & $level) && print $message ;
+}
+
+sub recursive_kill{
+	my $parent = shift ;
+	my $proc_table=Proc::ProcessTable->new();
+	foreach my $proc (@{$proc_table->table()}) {
+		recursive_kill($proc->{pid}) if ($proc->{ppid} == $parent) ;
+	}
+	kill($_kill_signal, $parent) ;
 }
 
 our %h_process = () ;
@@ -145,13 +157,15 @@ sub check_and_wait{
 				#15: TERM
 				#print "process timeout and killed: [$pid, $no]\n" ;
 				print_log($_notice, "process timeout and killed: [$pid, $no]\n") ;
-				kill(9, $pid) ;
+				#kill(-9, $pid) ;
+				#kill($_kill_signal, $pid) ;
+				recursive_kill($pid) ;
 				#Don't delete here. 
 				#wait for it and then delete
 				#delete $h_process{$pid} ;
 				#remember to comment out the following line 
 				#after debugging. 
-				sleep(10) ;
+				#sleep(10) ;
 			}	
 		}
 	}
@@ -176,7 +190,8 @@ while (<STDIN>){
 		print_log($_warning, "$line_no : failed creating process\n") ;
 	} elsif ( $pid == 0 ){
 		#child process, execute the command
-		my $cret = system("$cmd") ;
+		#my $cret = system("$cmd") ;
+		my $cret = exec qq($cmd ; echo "$$: finished executing: $cmd\n" > $tmpfifo) ;
 		#mark2: see also mark1
 		#at least one of the tailing '&' and '_gap_read_fifo'
 		#is essential. Using '&', the child process can return 
@@ -185,8 +200,9 @@ while (<STDIN>){
 		#to read through the pipe and then exit. In this case, 
 		#the parent should sleep for a moment before calling 
 		#'waitpid()' to successfully collect the zombie child. 
-		#system qq(echo "$$:finished" > $tmpfifo &) ;
-		system qq(echo "$$:finished" > $tmpfifo) ;
+
+		system qq(echo "$$:can not exec: $cmd\n" > $tmpfifo) ;
+		#system qq(echo "$$:finished" > $tmpfifo) ;
 		#sleep(2) ;
 		exit($cret) ;
 	} else {
@@ -205,6 +221,8 @@ print_log($_notice, `date` . ":end multiprocess\n") ;
 #closing the handle takes much time. 
 #sometimes 1 min. I decide to delete before closing. 
 #it depends on the recursively created process to terminate. 
+#I have the following ugly way to handle it....
+`echo "let me go..." > $tmpfifo` ;
 close($fh_fifo) ;
 `rm -f $tmpfifo` ;
 print_log($_notice, `date` . ":handle closed\n") ;
@@ -212,6 +230,5 @@ print_log($_notice, `date` . ":handle closed\n") ;
 #for (keys %h_process){
 #	waitpid($_, 0) ;
 #}
-
 
 exit 0 
