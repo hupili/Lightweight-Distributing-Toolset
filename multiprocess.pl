@@ -12,7 +12,7 @@ our $_fatal = 1 ;
 our $_warning = 2 ;
 our $_notice = 3 ;
 our $_debug = 4 ;
-our $_output_level = $_fatal | $_warning | $_notice | $_debug ;
+#our $_output_level = $_fatal | $_warning | $_notice | $_debug ;
 our $_output_level = $_fatal | $_warning | $_notice ;
 
 my $usage = "$0 {max_proc} {timeout}" ;
@@ -37,6 +37,11 @@ open $fh_fifo, "cat $tmpfifo |" ;
 
 my $line_no = 0 ;
 
+sub print_log{
+	my ($level, $message) = @_ ;
+	($_output_level & $level) && print $message ;
+}
+
 our %h_process = () ;
 sub check_and_wait{
 	my ($termination) = @_ ;
@@ -58,7 +63,8 @@ sub check_and_wait{
 			}
 		}
 
-		print "wait for : $wait_time\n" ;
+		#print "wait for : $wait_time\n" ;
+		print_log($_notice, "wait for : $wait_time\n") ;
 		$wait_time ++ ; #avoid boundary case
 			
 		my $bits = "" ;
@@ -67,15 +73,18 @@ sub check_and_wait{
 		print "nfound: $nfound\n" ;
 		my $tmp = "" ;
 		if ( $nfound ){
-			print "==found signal in pipe\n" ;
+			#print "==found signal in pipe\n" ;
+			print_log($_debug, "==found signal in pipe\n") ;
 			while (1) {
 				my $rret = read($fh_fifo, $tmp, $_read_length_once) ;
 				if ( (! defined($rret)) || $rret == 0 ){
 					last ;
 				}
-				print $tmp ;
+				#print $tmp ;
+				print_log($_debug, $tmp) ;
 			}
-			print "==pipe read end\n" ;
+			#print "==pipe read end\n" ;
+			print_log($_debug, "==pipe read end\n") ;
 			#reopen to read next signal
 			close($fh_fifo) ;
 			open $fh_fifo, "cat $tmpfifo |" ;
@@ -88,12 +97,14 @@ sub check_and_wait{
 			#while (1) { 
 			for (keys %h_process){
 				my $pid = waitpid(-1, POSIX::WNOHANG) ;
-				print "checking if process finish: $pid\n" ;
+				#print "checking if process finish: $pid\n" ;
+				print_log($_debug, "checking if process finish: $pid\n") ;
 				#my $r = waitpid($pid, POSIX::WNOHANG) ;
 				#if ( $r > 0 ) {
 				if ( $pid > 0 ) {
 					my $no = $h_process{$pid}->{"no"} ;
-					print "process finished: [$pid, $no]\n" ;
+					#print "process finished: [$pid, $no]\n" ;
+					print_log($_notice, "process finished: [$pid, $no]\n") ;
 					#supposed to be a finished process 
 					delete $h_process{$pid} ;
 				} 
@@ -115,14 +126,16 @@ sub check_and_wait{
 			my $pid = $_->{"pid"} ;
 			my $start_time = $_->{"start_time"} ;
 			my $no = $_->{"no"} ;
-			print "checking if process timeout: [$pid, $no]\n" ;
+			#print "checking if process timeout: [$pid, $no]\n" ;
+			print_log($_debug, "checking if process timeout: [$pid, $no]\n") ;
 			if ( time - $start_time > $timeout ){
 				#kill 
 				#send negative signal number to kill process group. 
 				#possible numbers.
 				#9: KILL
 				#15: TERM
-				print "process timeout and killed: [$pid, $no]\n" ;
+				#print "process timeout and killed: [$pid, $no]\n" ;
+				print_log($_notice, "process timeout and killed: [$pid, $no]\n") ;
 				kill(-9, $pid) ;
 				delete $h_process{$pid} ;
 			}	
@@ -139,10 +152,12 @@ while (<STDIN>){
 	$line_no ++ ;
 	chomp ;
 	my $cmd = $_ ;
-	print "$line_no : $cmd\n" ;	
+	#print "$line_no : $cmd\n" ;	
+	print_log($_notice, "$line_no : $cmd\n") ;	
 	my $pid = fork() ;
 	if ( ! defined($pid) ){
-		print "$line_no : failed creating process\n" ;
+		#print "$line_no : failed creating process\n" ;
+		print_log($_warning, "$line_no : failed creating process\n") ;
 	} elsif ( $pid == 0 ){
 		#child process, execute the command
 		my $cret = system("$cmd") ;
