@@ -90,31 +90,40 @@ sub check_and_wait{
 			open $fh_fifo, "cat $tmpfifo |" ;
 
 			#mark1: see mark2 below
-			sleep $_gap_read_fifo ;
+			#sleep $_gap_read_fifo ;
+			select(undef, undef, undef, $_gap_read_fifo) ;
+		}
 
-			#check for finished process
-			#for my $pid (keys %h_process){
-			#while (1) { 
-			for (keys %h_process){
-				my $pid = waitpid(-1, POSIX::WNOHANG) ;
-				#print "checking if process finish: $pid\n" ;
-				print_log($_debug, "checking if process finish: $pid\n") ;
-				#my $r = waitpid($pid, POSIX::WNOHANG) ;
-				#if ( $r > 0 ) {
-				if ( $pid > 0 ) {
+		#check for finished process
+		#for my $pid (keys %h_process){
+		#while (1) { 
+		for (keys %h_process){
+			my $pid = waitpid(-1, POSIX::WNOHANG) ;
+			#print "checking if process finish: $pid\n" ;
+			print_log($_debug, "checking if process finish: $pid\n") ;
+			#my $r = waitpid($pid, POSIX::WNOHANG) ;
+			#if ( $r > 0 ) {
+			if ( $pid > 0 ) {
+				print_log($_notice, "get one zombie process:$pid\n") ;
+				if ( defined $h_process{$pid} ){	
 					my $no = $h_process{$pid}->{"no"} ;
 					#print "process finished: [$pid, $no]\n" ;
 					print_log($_notice, "process finished: [$pid, $no]\n") ;
 					#supposed to be a finished process 
 					delete $h_process{$pid} ;
-				} 
-				#else {
-				#	last ;
-				#}
-				#test 
-				#last ;
-			}
+				} else {
+					#probably a killed child process.
+					#due to hazard, we collect its id again. 
+					print_log($_warning, "get one zombie process that is not in our list:$pid\n") ;
+				}
+			} 
+			#else {
+			#	last ;
+			#}
+			#test 
+			#last ;
 		}
+
 		#print "close handle, begin\n" ;
 		#a simple close will cause a block here...
 		#my $cret = close($fh) ;
@@ -136,14 +145,21 @@ sub check_and_wait{
 				#15: TERM
 				#print "process timeout and killed: [$pid, $no]\n" ;
 				print_log($_notice, "process timeout and killed: [$pid, $no]\n") ;
-				kill(-9, $pid) ;
-				delete $h_process{$pid} ;
+				kill(9, $pid) ;
+				#Don't delete here. 
+				#wait for it and then delete
+				#delete $h_process{$pid} ;
+				#remember to comment out the following line 
+				#after debugging. 
+				sleep(10) ;
 			}	
 		}
 	}
 }
 
 #================ main ==============
+
+print_log($_notice, `date` . ":start multiprocess\n") ;
 
 while (<STDIN>){
 	if ( /^\s*$/ ){
@@ -169,7 +185,8 @@ while (<STDIN>){
 		#to read through the pipe and then exit. In this case, 
 		#the parent should sleep for a moment before calling 
 		#'waitpid()' to successfully collect the zombie child. 
-		system qq(echo "$$:finished" > $tmpfifo &) ;
+		#system qq(echo "$$:finished" > $tmpfifo &) ;
+		system qq(echo "$$:finished" > $tmpfifo) ;
 		#sleep(2) ;
 		exit($cret) ;
 	} else {
@@ -184,12 +201,17 @@ while (<STDIN>){
 
 check_and_wait(1) ;
 
+print_log($_notice, `date` . ":end multiprocess\n") ;
+#closing the handle takes much time. 
+#sometimes 1 min. I decide to delete before closing. 
+#it depends on the recursively created process to terminate. 
 close($fh_fifo) ;
+`rm -f $tmpfifo` ;
+print_log($_notice, `date` . ":handle closed\n") ;
 
 #for (keys %h_process){
 #	waitpid($_, 0) ;
 #}
 
-`rm -f $tmpfifo` ;
 
 exit 0 
