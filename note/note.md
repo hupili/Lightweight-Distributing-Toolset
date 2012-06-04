@@ -15,3 +15,13 @@ Notes
    cycle get stuck. 
    * The autonoma in task-update.pl should be 
    redesigned... It gets rather large now. 
+
+20120531
+----
+
+Here's a piece of interesting work: 
+[https://github.com/erikfrey/bashreduce](https://github.com/erikfrey/bashreduce)
+
+The bashreduce looks more lightweighted than the current tool... 
+LWT has more functionality but can learn the way of handling 
+muti-machine communications from that project. esp. ssh + netcat. 
