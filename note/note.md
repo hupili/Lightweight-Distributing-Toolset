@@ -43,9 +43,9 @@ value of the child process.
 
 [http://perldoc.perl.org/perlvar.html]
 (http://perldoc.perl.org/perlvar.html)
-``
-Finally, $? may be set to non-0 value if the external program /cdrom/install fails. The upper eight bits reflect specific error conditions encountered by the program (the program's exit() value). The lower eight bits reflect mode of failure, like signal death and core dump information. See wait(2) for details.
-``
+
+> Finally, $? may be set to non-0 value if the external program /cdrom/install fails. The upper eight bits reflect specific error conditions encountered by the program (the program's exit() value). The lower eight bits reflect mode of failure, like signal death and core dump information. See wait(2) for details.
+
 
 20120605 - Implementation of ./multiprocess.pl
 ----
@@ -128,4 +128,3 @@ Here I list those key points:
    After one round of 'while... read...', the pipe becomes 
    invalid at the parent side. If we do not re-open it, we 
    can not read anything child processes write to it later...
-
