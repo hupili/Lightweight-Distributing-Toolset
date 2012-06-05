@@ -121,7 +121,11 @@ Here I list those key points:
    This is because we already read out everything in the pipe and 
    reopens it every time. In the end of parent script, the 'cat' 
    gets stuck and the parent process does not exit...
+   So I intentionally echo something into the pipe 
+   when multi-processing is finished. This is to let 'cat' go, 
+   and the process can terminate...
    * I should explain why the pipe is re-opened every time. 
    After one round of 'while... read...', the pipe becomes 
    invalid at the parent side. If we do not re-open it, we 
    can not read anything child processes write to it later...
+
