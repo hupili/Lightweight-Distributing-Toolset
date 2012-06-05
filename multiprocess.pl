@@ -40,8 +40,6 @@ if ( system("mkfifo $tmpfifo") != 0 ){
 our $fh_fifo ;
 open $fh_fifo, "cat $tmpfifo |" ;
 
-#my $ppid = $$ ;
-
 my $line_no = 0 ;
 
 sub print_log{
@@ -65,10 +63,8 @@ sub check_and_wait{
 	while ( ((scalar keys %h_process >= $max_proc)
 		|| $termination)
 		&& (scalar keys %h_process > 0) ){
-		#reach maximum number of processes
-		#wait for someone to exit
 
-		#print "$termination\t", scalar keys %h_process, "\n" ;
+		print_log($_debug, "$termination\t", scalar keys %h_process, "\n") ;
 
 		my $wait_time = $timeout ;
 		for (values %h_process){
@@ -78,14 +74,12 @@ sub check_and_wait{
 			}
 		}
 
-		#print "wait for : $wait_time\n" ;
 		print_log($_notice, "wait for : $wait_time\n") ;
 		$wait_time ++ ; #avoid boundary case
 			
 		my $bits = "" ;
 		vec($bits, fileno($fh_fifo), 1) = 1 ;
 		my $nfound = select($bits, undef, undef, $wait_time) ;
-		#print "nfound: $nfound\n" ;
 		if ( $nfound ){
 			print_log($_notice, "end of wait, triggered by signal in pipe\n") ;
 		} else {
@@ -93,17 +87,14 @@ sub check_and_wait{
 		}
 		my $tmp = "" ;
 		if ( $nfound ){
-			#print "==found signal in pipe\n" ;
 			print_log($_debug, "==found signal in pipe\n") ;
 			while (1) {
 				my $rret = read($fh_fifo, $tmp, $_read_length_once) ;
 				if ( (! defined($rret)) || $rret == 0 ){
 					last ;
 				}
-				#print $tmp ;
 				print_log($_debug, $tmp) ;
 			}
-			#print "==pipe read end\n" ;
 			print_log($_debug, "==pipe read end\n") ;
 			#reopen to read next signal
 			close($fh_fifo) ;
@@ -114,30 +105,22 @@ sub check_and_wait{
 			select(undef, undef, undef, $_gap_read_fifo) ;
 		}
 
-		#check for finished process
-		#for my $pid (keys %h_process){
-		#while (1) { 
 		for (keys %h_process){
 			my $pid = waitpid(-1, POSIX::WNOHANG) ;
 			my $nret = $? ;
-			#print "checking if process finish: $pid\n" ;
 			print_log($_debug, "checking if process finish. waitpid return value: $pid\n") ;
-			#my $r = waitpid($pid, POSIX::WNOHANG) ;
-			#if ( $r > 0 ) {
 			if ( $pid > 0 ) {
 				my $ret_up = $nret >> 8 ;
 				my $ret_low = $nret & 0xff ;
 				print_log($_notice, "get one zombie process:[$pid,$ret_low,$ret_up]\n") ;
 				if ( defined $h_process{$pid} ){	
 					my $no = $h_process{$pid}->{"no"} ;
-					#print "process finished: [$pid, $no]\n" ;
 					if ( defined $h_process{$pid}->{"killed"} 
 					&& defined $h_process{$pid}->{"killed"} == 1 ){
 						print_log($_notice, "process killed: [$pid, $no]\n") ;
 					} else {
 						print_log($_notice, "process finished: [$pid, $no]\n") ;
 					}
-					#supposed to be a finished process 
 					delete $h_process{$pid} ;
 				} else {
 					#killed process
@@ -145,18 +128,7 @@ sub check_and_wait{
 					print_log($_warning, "get one zombie process that is not in our list:$pid\n") ;
 				}
 			} 
-			#else {
-			#	last ;
-			#}
-			#test 
-			#last ;
 		}
-
-		#print "close handle, begin\n" ;
-		#a simple close will cause a block here...
-		#my $cret = close($fh) ;
-		#print "close $fh: $cret\n" ;
-		#print "close handle, end\n" ;
 
 		#check for timeout process
 		for (values %h_process){
@@ -171,19 +143,9 @@ sub check_and_wait{
 				#possible numbers.
 				#9: KILL
 				#15: TERM
-				#print "process timeout and killed: [$pid, $no]\n" ;
-				#print_log($_notice, "process timeout and killed: [$pid, $no]\n") ;
 				print_log($_notice, "process timeout and killing: [$pid, $no]\n") ;
 				$h_process{$pid}->{"killed"} = 1 ; 
-				#kill(-9, $pid) ;
-				#kill($_kill_signal, $pid) ;
 				recursive_kill($pid) ;
-				#Don't delete here. 
-				#wait for it and then delete
-				#delete $h_process{$pid} ;
-				#remember to comment out the following line 
-				#after debugging. 
-				#sleep(10) ;
 			}	
 		}
 	}
@@ -200,7 +162,6 @@ while (<STDIN>){
 	$line_no ++ ;
 	chomp ;
 	my $cmd = $_ ;
-	#print "$line_no : $cmd\n" ;	
 	print_log($_notice, "$line_no : $cmd\n") ;	
 	my $pid = fork() ;
 	if ( ! defined($pid) ){
@@ -209,8 +170,8 @@ while (<STDIN>){
 		sleep($_gap_fork_fail) ;
 	} elsif ( $pid == 0 ){
 		#child process, execute the command
-		#my $cret = system("$cmd") ;
 		my $cret = exec qq($cmd ; ret=\$? ; echo "$$: finished executing: $cmd\n" > $tmpfifo; exit \$ret) ;
+
 		#mark2: see also mark1
 		#at least one of the tailing '&' and '_gap_read_fifo'
 		#is essential. Using '&', the child process can return 
@@ -219,17 +180,16 @@ while (<STDIN>){
 		#to read through the pipe and then exit. In this case, 
 		#the parent should sleep for a moment before calling 
 		#'waitpid()' to successfully collect the zombie child. 
+		#In the current situation, neither operation symboled by 
+		#mark1 nor mark2 is activated.
 
+		#only fail to find the command can lead to here. 
 		system qq(echo "$$:can not exec: $cmd\n" > $tmpfifo) ;
-		#system qq(echo "$$:finished" > $tmpfifo) ;
-		#sleep(2) ;
 		exit($cret) ;
 	} else {
 		$h_process{$pid}->{"pid"} = $pid ;
 		$h_process{$pid}->{"no"} = $line_no ;
 		$h_process{$pid}->{"start_time"} = time ;
-		#parent process
-		#waitpid($pid, 0) ;
 		check_and_wait(0) ;
 	}
 }
@@ -237,17 +197,15 @@ while (<STDIN>){
 check_and_wait(1) ;
 
 print_log($_notice, `date` . ":end multiprocess\n") ;
+
 #closing the handle takes much time. 
 #sometimes 1 min. I decide to delete before closing. 
 #it depends on the recursively created process to terminate. 
 #I have the following ugly way to handle it....
 `echo "let me go..." > $tmpfifo` ;
+
 close($fh_fifo) ;
 `rm -f $tmpfifo` ;
 print_log($_notice, `date` . ":handle closed\n") ;
-
-#for (keys %h_process){
-#	waitpid($_, 0) ;
-#}
 
 exit 0 
