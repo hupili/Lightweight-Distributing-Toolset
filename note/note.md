@@ -31,3 +31,18 @@ muti-machine communications from that project. esp. ssh + netcat.
 
 The multiporcess eventually work. But the implementation is really ugly..
 I don't quite like it...
+
+20120605
+----
+
+I want to capture the return value of child process in multiprocess.pl. 
+It turns out the $? after waitpid() call has two parts. 
+The lower 8 bits are indicator of returning condition
+(termination, kill, etc). The upper 8 bits are the return 
+value of the child process. 
+
+[http://perldoc.perl.org/perlvar.html]
+(http://perldoc.perl.org/perlvar.html)
+``
+Finally, $? may be set to non-0 value if the external program /cdrom/install fails. The upper eight bits reflect specific error conditions encountered by the program (the program's exit() value). The lower eight bits reflect mode of failure, like signal death and core dump information. See wait(2) for details.
+``
