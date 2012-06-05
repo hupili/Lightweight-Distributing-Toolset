@@ -43,6 +43,6 @@ value of the child process.
 
 [http://perldoc.perl.org/perlvar.html]
 (http://perldoc.perl.org/perlvar.html)
-``
-Finally, $? may be set to non-0 value if the external program /cdrom/install fails. The upper eight bits reflect specific error conditions encountered by the program (the program's exit() value). The lower eight bits reflect mode of failure, like signal death and core dump information. See wait(2) for details.
-``
+
+> Finally, $? may be set to non-0 value if the external program /cdrom/install fails. The upper eight bits reflect specific error conditions encountered by the program (the program's exit() value). The lower eight bits reflect mode of failure, like signal death and core dump information. See wait(2) for details.
+
