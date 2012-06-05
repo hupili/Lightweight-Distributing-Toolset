@@ -18,6 +18,10 @@ our $_debug = 4 ;
 #our $_output_level = $_fatal | $_warning | $_notice | $_debug ;
 our $_output_level = $_fatal | $_warning | $_notice ;
 
+our $_read_length_once = 1000 ;
+our $_gap_read_fifo = 0 ;
+our $_gap_fork_fail = 5 ;
+
 my $usage = "$0 {max_proc} {timeout}" ;
 
 my $ARGC = @ARGV ;
@@ -42,7 +46,8 @@ my $line_no = 0 ;
 
 sub print_log{
 	my ($level, $message) = @_ ;
-	($_output_level & $level) && print $message ;
+	my @_type = ("NULL", "FATAL", "WARNING", "NOTICE", "DEBUG") ;
+	($_output_level & $level) && print "[$_type[$level]]$message" ;
 }
 
 sub recursive_kill{
@@ -57,8 +62,6 @@ sub recursive_kill{
 our %h_process = () ;
 sub check_and_wait{
 	my ($termination) = @_ ;
-	my $_read_length_once = 1000 ;
-	my $_gap_read_fifo = 0 ;
 	while ( ((scalar keys %h_process >= $max_proc)
 		|| $termination)
 		&& (scalar keys %h_process > 0) ){
@@ -82,7 +85,12 @@ sub check_and_wait{
 		my $bits = "" ;
 		vec($bits, fileno($fh_fifo), 1) = 1 ;
 		my $nfound = select($bits, undef, undef, $wait_time) ;
-		print "nfound: $nfound\n" ;
+		#print "nfound: $nfound\n" ;
+		if ( $nfound ){
+			print_log($_notice, "end of wait, triggered by signal in pipe\n") ;
+		} else {
+			print_log($_notice, "end of wait, triggered by timeout\n") ;
+		}
 		my $tmp = "" ;
 		if ( $nfound ){
 			#print "==found signal in pipe\n" ;
@@ -111,21 +119,29 @@ sub check_and_wait{
 		#while (1) { 
 		for (keys %h_process){
 			my $pid = waitpid(-1, POSIX::WNOHANG) ;
+			my $nret = $? ;
 			#print "checking if process finish: $pid\n" ;
-			print_log($_debug, "checking if process finish: $pid\n") ;
+			print_log($_debug, "checking if process finish. waitpid return value: $pid\n") ;
 			#my $r = waitpid($pid, POSIX::WNOHANG) ;
 			#if ( $r > 0 ) {
 			if ( $pid > 0 ) {
-				print_log($_notice, "get one zombie process:$pid\n") ;
+				my $ret_up = $nret >> 8 ;
+				my $ret_low = $nret & 0xff ;
+				print_log($_notice, "get one zombie process:[$pid,$ret_low,$ret_up]\n") ;
 				if ( defined $h_process{$pid} ){	
 					my $no = $h_process{$pid}->{"no"} ;
 					#print "process finished: [$pid, $no]\n" ;
-					print_log($_notice, "process finished: [$pid, $no]\n") ;
+					if ( defined $h_process{$pid}->{"killed"} 
+					&& defined $h_process{$pid}->{"killed"} == 1 ){
+						print_log($_notice, "process killed: [$pid, $no]\n") ;
+					} else {
+						print_log($_notice, "process finished: [$pid, $no]\n") ;
+					}
 					#supposed to be a finished process 
 					delete $h_process{$pid} ;
 				} else {
-					#probably a killed child process.
-					#due to hazard, we collect its id again. 
+					#killed process
+					#can we reach here?
 					print_log($_warning, "get one zombie process that is not in our list:$pid\n") ;
 				}
 			} 
@@ -156,7 +172,9 @@ sub check_and_wait{
 				#9: KILL
 				#15: TERM
 				#print "process timeout and killed: [$pid, $no]\n" ;
-				print_log($_notice, "process timeout and killed: [$pid, $no]\n") ;
+				#print_log($_notice, "process timeout and killed: [$pid, $no]\n") ;
+				print_log($_notice, "process timeout and killing: [$pid, $no]\n") ;
+				$h_process{$pid}->{"killed"} = 1 ; 
 				#kill(-9, $pid) ;
 				#kill($_kill_signal, $pid) ;
 				recursive_kill($pid) ;
@@ -188,10 +206,11 @@ while (<STDIN>){
 	if ( ! defined($pid) ){
 		#print "$line_no : failed creating process\n" ;
 		print_log($_warning, "$line_no : failed creating process\n") ;
+		sleep($_gap_fork_fail) ;
 	} elsif ( $pid == 0 ){
 		#child process, execute the command
 		#my $cret = system("$cmd") ;
-		my $cret = exec qq($cmd ; echo "$$: finished executing: $cmd\n" > $tmpfifo) ;
+		my $cret = exec qq($cmd ; ret=\$? ; echo "$$: finished executing: $cmd\n" > $tmpfifo; exit \$ret) ;
 		#mark2: see also mark1
 		#at least one of the tailing '&' and '_gap_read_fifo'
 		#is essential. Using '&', the child process can return 
