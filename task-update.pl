@@ -160,7 +160,15 @@ for my $key(keys %$ref_task){
 		}
 		
 		#my $ret = system qq(./execute.pl $machine "./tools/check.sh $home/$uuid") ;
-		my $ret = `./execute.pl $machine "./tools/check.sh $home/$uuid"` ;
+		my $ret = `./execute.pl $machine "./tools/check.sh $home/$uuid" | grep "^check"` ;
+		#print $ret, "\n" ;
+		#next ;
+		if ( $ret =~ /^check:(\d+)/ ){
+			$ret = $1 ;
+		} else {
+			next ;
+		}
+		#my $ret = system qq(./execute.pl $machine "./tools/check.sh $home/$uuid") ;
 		chomp($ret) ;
 		print "checking $machine, $uuid: $ret\n" ;
 

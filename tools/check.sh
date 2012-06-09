@@ -11,9 +11,10 @@ cd $working
 
 if [[ -e run.finish ]] ; then
 	#exit 0
-	echo 0
+	echo "check:0"
 else 
 	#exit 1
-	echo 1
+	echo "check:1"
 fi
 
+exit 0 

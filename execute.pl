@@ -20,4 +20,6 @@ my $ret_low = $nret & 0xff ;
 my $ret_high = $nret >> 8 ;
 print "[$hostname][end:$ret_low,$ret_high]\n" ;
 
-exit $nret ;
+#high 8bit is the real return status of 
+#internal commands.
+exit $ret_high ;
