@@ -52,8 +52,8 @@ sub get_machine_ok{
 
 #============ main =========
 
-my $mylock = "lock/update.pl.lock" ;
 #==== check lock to avoid multiple update.pl running====
+my $mylock = "lock/update.pl.lock" ;
 if ( -f $mylock ){
 	print STDERR "update.pl.lock exists! exit..\n" ;
 	exit(-1) ;
@@ -61,11 +61,15 @@ if ( -f $mylock ){
 
 `echo \`date\` > $mylock` ;
 
+#==== init environment ====
+
+`mkdir -p $tmp/result` ;
+
 #==== load task record file ===
 if ( ! -e "storable.task.data" ){
 	#system("touch storable.task.data") ;
-	my %tmp = () ;
-	store \%tmp, 'storable.task.data' ;
+	my %tmp_hash = () ;
+	store \%tmp_hash, 'storable.task.data' ;
 }
 my $ref_task = retrieve 'storable.task.data' ;
 
@@ -156,6 +160,9 @@ for my $key(keys %$ref_task){
 }
 
 #==== check running tasks
+
+my $cmd_check_running = "" ;
+
 for my $key(keys %$ref_task){
 	my %cur_task = %{$ref_task->{$key}} ;
 	if ( $cur_task{"status"} eq "running" ){
@@ -170,48 +177,55 @@ for my $key(keys %$ref_task){
 			#TODO: mark the task as killed
 			next ;
 		}
-		
-		#my $ret = system qq(./execute.pl $machine "./tools/check.sh $home/$uuid") ;
-		my $ret = `./execute.pl $machine "./tools/check.sh $home/$uuid" | grep "^check"` ;
-		#print $ret, "\n" ;
-		#next ;
-		if ( $ret =~ /^check:(\d+)/ ){
-			$ret = $1 ;
-		} else {
-			next ;
-		}
-		#my $ret = system qq(./execute.pl $machine "./tools/check.sh $home/$uuid") ;
-		chomp($ret) ;
-		print "checking $machine, $uuid: $ret\n" ;
+		$cmd_check_running .=
+		qq(./execute.pl $machine "./tools/check.sh $home/$uuid" | grep "^check" | sed 's/^check://g' > $tmp/result/$uuid\n) ;
+	}
+}
 
-		my $ret1 = -1 ;
-		if ( $ret == 0 ){
-			#finished !! yeah!
-			my $dir_local = 
-				"$dir_task/" . 
-				join(".", $cur_task{"name"}, $cur_task{"time"}, $cur_task{"uuid"}) ;
-			my $dir_remote = $uuid ;
-			my $subdir = "" ;
-			if ( defined $cur_task{"d_fetch"} ) {
-				$subdir = $cur_task{"d_fetch"} ;
-				#$subdir =~ s/\s//g ;
-			}
-			$ret1 = system qq(./get.pl $machine $dir_remote/$subdir $dir_local/result) ;
-			print "fetch result: $ret1\n" ;
-		}
+#print $cmd_check_running ;
+open f_cmd, ">$tmp/check_running_cmd" ;
+print f_cmd $cmd_check_running ;
+close f_cmd ;
+system qq( cat $tmp/check_running_cmd | ./multiprocess.pl $multi_exe_count $multi_exe_timeout &> $tmp/check_running_log) ;
 
-		my $ret2 = -1 ;
-		if ( $ret1 == 0 ){
-			$ret2 = system qq( ./execute.pl $machine "rm -rf $working") ;
-			print "clear working directory: $ret2\n" ;
+my @a_finished = `cd $tmp/result/ ; grep ^0 * | sed 's/:0//g'` ;
+#print "@a_finished" ;
+for my $key(@a_finished){
+	chomp($key) ;
+	my %cur_task = %{$ref_task->{$key}} ;
+	my $machine = $cur_task{"machine"} ;
+	my $uuid = $cur_task{"uuid"} ;
+	my $home = $h_host{$machine}->{"home"} ;
+	my $working = "$home/$uuid" ;
+	print "$key\n" ;
+	my $ret = 0 ;
+	my $ret1 = -1 ;
+	if ( $ret == 0 ){
+		#finished !! yeah!
+		my $dir_local = 
+		"$dir_task/" . 
+		join(".", $cur_task{"name"}, $cur_task{"time"}, $cur_task{"uuid"}) ;
+		my $dir_remote = $uuid ;
+		my $subdir = "" ;
+		if ( defined $cur_task{"d_fetch"} ) {
+			$subdir = $cur_task{"d_fetch"} ;
+			#$subdir =~ s/\s//g ;
 		}
+		$ret1 = system qq(./get.pl $machine $dir_remote/$subdir $dir_local/result) ;
+		print "fetch result: $ret1\n" ;
+	}
 
-		if ( $ret2 == 0 ){
-			my $cur_time = get_datestr() ;
-			$ref_task->{$key}->{"status"} = "finish" ;
-			$ref_task->{$key}->{"time_finish"} = $cur_time ;
-		}
-	} 
+	my $ret2 = -1 ;
+	if ( $ret1 == 0 ){
+		$ret2 = system qq( ./execute.pl $machine "rm -rf $working") ;
+		print "clear working directory: $ret2\n" ;
+	}
+
+	if ( $ret2 == 0 ){
+		my $cur_time = get_datestr() ;
+		$ref_task->{$key}->{"status"} = "finish" ;
+		$ref_task->{$key}->{"time_finish"} = $cur_time ;
+	}
 }
 
 #==== check finished/killed tasks
@@ -238,6 +252,10 @@ for my $key(keys %$ref_task){
 print "=== current task data:\n" ;
 print Dumper($ref_task) ;
 store $ref_task, 'storable.task.data' ;
+
+#==== clean up working environment ====
+#print "$tmp\n" ;
+`rm -rf $tmp` ;
 
 #==== unlock 
 `rm -f $mylock` ;

@@ -66,7 +66,7 @@ for my $line(`cat $fn_hostlist`){
 	} ;
 } ;
 
-our $tmp = "tmp/$$" ;
+our $tmp = "$Bin/tmp/$$" ;
 
 1;
 
