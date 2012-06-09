@@ -143,3 +143,23 @@ inside system call.
 For 'ssh' command, it returns 255 on failure of connection, 
 authentication, etc. It returns the status of command 
 inside 'ssh' on other conditions. 
+
+20120609. local parallelization
+----
+
+Before parallelization:
+```
+$date ; ./execute-all.pl 'ls .; sleep 2' &> /dev/null ; date
+Sat Jun  9 15:29:26 HKT 2012
+Sat Jun  9 15:29:44 HKT 2012
+```
+test batch executtion on 9 machines.
+
+
+After parallelization:
+```
+$date ; ./execute-all.pl 'ls .; sleep 2' &> /dev/null ; date
+Sat Jun  9 15:54:42 HKT 2012
+Sat Jun  9 15:54:47 HKT 2012
+```
+test batch execution on 9 machines with 5 concurrent processes.

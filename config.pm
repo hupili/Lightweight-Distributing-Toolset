@@ -5,6 +5,7 @@ use base 'Exporter' ;
 use FindBin qw($Bin $Script) ;
 
 our @EXPORT = qw(
+$tmp
 $dir_task
 $dir_description
 $dir_execute
@@ -15,7 +16,16 @@ $dir_execute
 @a_host
 %h_host
 %h_limit
+$multi_exe_timeout
+$multi_exe_count
+$multi_scp_timeout
+$multi_scp_count
 ) ;
+
+our $multi_exe_timeout = 100 ; #seconds
+our $multi_exe_count = 5 ; #concurrent process
+our $multi_scp_timeout = 100 ; #seconds
+our $multi_scp_count = 5 ; #concurrent process
 
 our $dir_task = "task" ;
 our $dir_description = "description" ;
@@ -33,7 +43,7 @@ our $fn_execute = "$Bin/$Script" ;
 our $dir_execute = $Bin ;
 
 #used for monitor, important....
-our $myuser = "plhu" ;
+our $myuser = "hpl011" ;
 
 our @a_host = () ;
 our %h_host = () ;
@@ -52,6 +62,8 @@ for my $line(`cat $fn_hostlist`){
 		"home" => $a_line[2] 
 	} ;
 } ;
+
+our $tmp = "tmp/$$" ;
 
 1;
 
