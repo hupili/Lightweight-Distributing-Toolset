@@ -71,7 +71,7 @@ for my $key(keys %$ref_task){
 			#check if this machine is available ;
 			if ($m->{"available"} eq 1 
 				&& $m->{"cpu"} < $max_cpu 
-				&& $m->{"$myuser"} < $max_cpu_me 
+				&& $m->{"myuser"} < $max_cpu_me 
 				&& $m->{"dtask"} < $max_dtask){
 
 				#print $m, "\n" ;

@@ -32,7 +32,7 @@ for my $peer(keys %h_peer){
 		$h_machine{$peer}->{"cpu"} += $record->{"pcpu"} ;	
 		$h_machine{$peer}->{"mem"} += $record->{"rss"} ;	
 		if ( $record->{"user"} eq "$myuser" ){
-			$h_machine{$peer}->{"$myuser"} += $record->{"pcpu"} ;
+			$h_machine{$peer}->{"myuser"} += $record->{"pcpu"} ;
 		}
 	}
 }
