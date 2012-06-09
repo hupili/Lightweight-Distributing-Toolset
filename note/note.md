@@ -202,3 +202,35 @@ only 5 concurrent process is allowed in the test.
 
 (8 out of 9 machines are valid and 1 invalid)
 
+
+20120609
+----
+
+A sample run after the work of today:
+```
+$./task-update.pl
+>>start add new:Sat Jun  9 22:34:31 HKT 2012
+>>end add new:Sat Jun  9 22:34:31 HKT 2012
+>>start run new:Sat Jun  9 22:34:31 HKT 2012
+>>start monitor:Sat Jun  9 22:34:32 HKT 2012
+>>end monitor:Sat Jun  9 22:36:14 HKT 2012
+>>start stat:Sat Jun  9 22:36:14 HKT 2012
+>>end stat:Sat Jun  9 22:36:14 HKT 2012
+>>start analyze:Sat Jun  9 22:36:14 HKT 2012
+>>end analyze:Sat Jun  9 22:36:14 HKT 2012
+no ok machines now! stop scheduling new dtasks
+>>end run new:Sat Jun  9 22:36:14 HKT 2012
+>>start check running:Sat Jun  9 22:36:14 HKT 2012
+>>end check running:Sat Jun  9 22:36:25 HKT 2012
+>>start check finished:Sat Jun  9 22:36:25 HKT 2012
+>>end check finished:Sat Jun  9 22:36:25 HKT 2012
+```
+16 available machines, distributed across the world, 
+mainly from Asia. 
+(Regular checking, no new tasks scheduled, 
+ no fetching files operation)
+
+The bottleneck appears to be './monitor.pl'. 
+I think it is due to the bulk 'ps aux' data 
+transferred back. 
+
