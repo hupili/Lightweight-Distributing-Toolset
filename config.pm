@@ -20,7 +20,10 @@ $multi_exe_timeout
 $multi_exe_count
 $multi_scp_timeout
 $multi_scp_count
+$gap_new_task
 ) ;
+
+our $gap_new_task = 1 ;
 
 our $multi_exe_timeout = 100 ; #seconds
 our $multi_exe_count = 5 ; #concurrent process
@@ -35,7 +38,7 @@ our %h_limit = (
 	max_cpu_night => 1000, 
 	max_cpu_me_day => 1000, 
 	max_cpu_me_night => 1000, 
-	max_dtask_day => 1, 
+	max_dtask_day => 5, 
 	max_dtask_night => 1, 
 ) ;
 

@@ -130,7 +130,8 @@ for my $key(keys %$ref_task){
 				#if one task succeed, wait a few seconds
 				#this is to let the process run fully 
 				#before we deploy new process on this machine
-				sleep 5 ;
+				#sleep 5 ;
+				sleep $gap_new_task ;
 
 				last ;
 			} # if cpu
