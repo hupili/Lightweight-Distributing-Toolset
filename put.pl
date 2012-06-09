@@ -11,4 +11,4 @@ my ($target, $local, $remote) = @ARGV ;
 my $home = $h_host{$target}->{"home"} ;
 my $ret = system qq( scp -r $local "$target:$home/$remote" ) ;
 
-exit $ret ;
+exit ($ret >> 8) ;

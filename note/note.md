@@ -163,3 +163,42 @@ Sat Jun  9 15:54:42 HKT 2012
 Sat Jun  9 15:54:47 HKT 2012
 ```
 test batch execution on 9 machines with 5 concurrent processes.
+
+20120609
+----
+
+Before refactoring 'task-update.pl', it 
+takes as many as 8 minutes to finish 
+scheduling a group of new tasks. For 
+regular checking of new tasks, it takes
+about 1 minutes to finish. 
+
+Now, I'm refactoring this script using 
+newly developed multiporcess.pl. 
+
+20120607
+----
+
+The 'put-all.pl' and 'put-all-diff.pl'
+scripts are subject to the same upgrade 
+as that of 'execut-all.pl'
+
+Before refactoring:
+```
+$date ; ./put-all.pl task.finish/ test2/ &> /dev/null ; date
+Sat Jun  9 20:55:22 HKT 2012
+Sat Jun  9 20:55:42 HKT 2012
+```
+upload 1.8M file to 9 machines, about 20 seconds. 
+
+After refactoring:
+```
+$date ; ./put-all.pl task.finish/ test10  ; date
+Sat Jun  9 21:14:55 HKT 2012
+Sat Jun  9 21:15:00 HKT 2012
+```
+upload 1.8M file to 9 machines, about 5 seconds. 
+only 5 concurrent process is allowed in the test. 
+
+(8 out of 9 machines are valid and 1 invalid)
+
