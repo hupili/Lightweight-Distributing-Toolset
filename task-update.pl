@@ -7,6 +7,51 @@ use Data::Dumper ;
 use Storable ;
 use List::Util ("shuffle", "sum") ;
 
+#======functions=====
+
+sub get_machine_ok{
+	my @tmp = () ;
+	`./monitor.pl` ;
+	`./statistics.pl` ;
+	my $ref_machine = retrieve 'storable.stat.machine' ;
+	my $cur_time = get_datestr() ;
+	my $hour = substr($cur_time, 7, 2) ;
+	my $max_cpu = 0 ;
+	my $max_cpu_me = 0 ;
+	my $max_dtask = 0 ; 
+	if ( $hour >= 23 || $hour <= 8 ) {
+		#night !!!! oh yeah~ I can launch more task
+		$max_cpu = $h_limit{"max_cpu_night"} ;
+		$max_cpu_me = $h_limit{"max_cpu_me_night"} ;
+		$max_dtask = $h_limit{"max_dtask_night"} ;
+	} else {
+		$max_cpu = $h_limit{"max_cpu_day"} ;
+		$max_cpu_me = $h_limit{"max_cpu_me_day"} ;
+		$max_dtask = $h_limit{"max_dtask_day"} ;
+	}
+	#print $max_cpu, ",", $max_cpu_me, "\n" ;
+	#print $hour ;
+	for my $mkey((keys %$ref_machine)){
+		my $m = $ref_machine->{$mkey} ;
+		#print Dumper($m) ;	
+		#check if this machine is available ;
+		if ($m->{"available"} eq 1 
+			&& $m->{"cpu"} < $max_cpu 
+			&& $m->{"myuser"} < $max_cpu_me 
+			&& $m->{"dtask"} < $max_dtask){
+			push @tmp, $mkey ;
+			#print $m, "\n" ;
+			#print "=== found available machine:\n" ;
+			#$find = 1 ;
+			#print Dumper($m) ;				
+		}
+	}
+	return @tmp ;
+}
+
+
+#============ main =========
+
 my $mylock = "lock/update.pl.lock" ;
 #==== check lock to avoid multiple update.pl running====
 if ( -f $mylock ){
@@ -37,110 +82,76 @@ for my $new_task(@a_new){
 	`mv $dir_nt $dir_task` ;
 }
 
+my @a_machine_ok = () ;
+
 #==== run new task ====
 for my $key(keys %$ref_task){
 	my %cur_task = %{$ref_task->{$key}} ;
 	if ( $cur_task{"status"} eq "new" ){
-	#if (1){
-		#print $key ;
-		#print get_datestr() ;
-		`./monitor.pl` ;
-		`./statistics.pl` ;
-		my $ref_machine = retrieve 'storable.stat.machine' ;
-		my $cur_time = get_datestr() ;
-		my $hour = substr($cur_time, 7, 2) ;
-		my $max_cpu = 0 ;
-		my $max_cpu_me = 0 ;
-		my $max_dtask = 0 ; 
-		if ( $hour >= 23 || $hour <= 8 ) {
-			#night !!!! oh yeah~ I can launch more task
-			$max_cpu = $h_limit{"max_cpu_night"} ;
-			$max_cpu_me = $h_limit{"max_cpu_me_night"} ;
-			$max_dtask = $h_limit{"max_dtask_night"} ;
-		} else {
-			$max_cpu = $h_limit{"max_cpu_day"} ;
-			$max_cpu_me = $h_limit{"max_cpu_me_day"} ;
-			$max_dtask = $h_limit{"max_dtask_day"} ;
-		}
-		#print $max_cpu, ",", $max_cpu_me, "\n" ;
-		#print $hour ;
-		my $find = 0 ; #any available machine?
-		for my $mkey(shuffle(keys %$ref_machine)){
-			my $m = $ref_machine->{$mkey} ;
-			#print Dumper($m) ;	
-			#check if this machine is available ;
-			if ($m->{"available"} eq 1 
-				&& $m->{"cpu"} < $max_cpu 
-				&& $m->{"myuser"} < $max_cpu_me 
-				&& $m->{"dtask"} < $max_dtask){
+		if ( (scalar @a_machine_ok) == 0){
+			#no ok machine in current queue
+			#wait for a gap and then scan
+			sleep $gap_new_task ;
 
-				#print $m, "\n" ;
-				print "=== found available machine:\n" ;
-				$find = 1 ;
-				print Dumper($m) ;				
+			#statistics.pl communicate with current script 
+			#using the following storable file. 
+			#TODO:this ugly architecrure should be modifed 
+			#in the future 
+			store $ref_task, 'storable.task.data' ;
 
-				my $hostname = $mkey ;
-				my $uuid = $key ;
-				my $home = $h_host{$hostname}->{"home"} ;
-				my $working = "$home/$uuid" ;
-				my $dir_local = 
-					"$dir_task/" . 
-					join(".", $cur_task{"name"}, $cur_task{"time"}, $cur_task{"uuid"}) ;
-				my $dir_remote = $uuid ;
-				my $exec = $cur_task{"exec"} ;
-
-				print "hostname:$hostname\n" ;
-				print "local dir:$dir_local\n" ;
-				print "remote dir:$dir_remote\n" ;
-				#my $ret0 = system qq( ./execute.pl $hostname "mkdir -p $working") ;
-				#print "mkdir: $ret0\n" ;
-
-				my $ret0 = -1 ;
-				my $ret1 = -1 ;
-				my $ret2 = -1 ;
-
-				$ret0 = system qq( ./execute.pl $hostname "rm -rf $working") ;
-				print "rmr: $ret0\n" ;
-
-				if ( $ret0 == 0 ){
-					$ret1 = system qq( ./put.pl $hostname $dir_local/ $dir_remote) ;
-					print "copy file: $ret1\n" ;
-				}
-
-				if ( $ret1 == 0 ){
-					my $cmd = qq(./tools/run.sh $home $working $exec) ;
-					$ret2 = system qq(./execute.pl $hostname "$cmd") ;	
-					print "cmd:$cmd\n" ;
-					print "execute: $ret2\n" ;
-				}
-
-				if ( $ret2 == 0 ){
-					#execute successfully, mark as running
-					$ref_task->{$key}->{"status"} = "running" ;
-					$ref_task->{$key}->{"machine"} = $hostname ;
-					$ref_task->{$key}->{"time_start"} = get_datestr() ; 
-				}
-
-				#statistics.pl communicate with current script 
-				#using the following storable file. 
-				#this ugly architecrure should be modifed 
-				#in the future 
-				store $ref_task, 'storable.task.data' ;
-
-				#if one task succeed, wait a few seconds
-				#this is to let the process run fully 
-				#before we deploy new process on this machine
-				#sleep 5 ;
-				sleep $gap_new_task ;
-
+			@a_machine_ok = get_machine_ok() ;
+			if ((scalar @a_machine_ok) == 0){
+				#still no machine available
+				#stop scheduling new tasks
+				print "no ok machines now! stop scheduling new dtasks\n" ;
 				last ;
-			} # if cpu
-		} # for all machine
-		if ( ! $find ){
-			#if we can not find available machine for this task. 
-			#there is no need to check for other task
-			last ; #end new running
+			} else {
+				print "ok machines: @a_machine_ok\n" ;
+			}
 		}
+
+		my $hostname = pop @a_machine_ok ;
+		my $uuid = $key ;
+		my $home = $h_host{$hostname}->{"home"} ;
+		my $working = "$home/$uuid" ;
+		my $dir_local = 
+		"$dir_task/" . 
+		join(".", $cur_task{"name"}, $cur_task{"time"}, $cur_task{"uuid"}) ;
+		my $dir_remote = $uuid ;
+		my $exec = $cur_task{"exec"} ;
+
+		print "hostname:$hostname\n" ;
+		print "local dir:$dir_local\n" ;
+		print "remote dir:$dir_remote\n" ;
+		#my $ret0 = system qq( ./execute.pl $hostname "mkdir -p $working") ;
+		#print "mkdir: $ret0\n" ;
+
+		my $ret0 = -1 ;
+		my $ret1 = -1 ;
+		my $ret2 = -1 ;
+
+		$ret0 = system qq( ./execute.pl $hostname "rm -rf $working") ;
+		print "rmr: $ret0\n" ;
+
+		if ( $ret0 == 0 ){
+			$ret1 = system qq( ./put.pl $hostname $dir_local/ $dir_remote) ;
+			print "copy file: $ret1\n" ;
+		}
+
+		if ( $ret1 == 0 ){
+			my $cmd = qq(./tools/run.sh $home $working $exec) ;
+			$ret2 = system qq(./execute.pl $hostname "$cmd") ;	
+			print "cmd:$cmd\n" ;
+			print "execute: $ret2\n" ;
+		}
+
+		if ( $ret2 == 0 ){
+			#execute successfully, mark as running
+			$ref_task->{$key}->{"status"} = "running" ;
+			$ref_task->{$key}->{"machine"} = $hostname ;
+			$ref_task->{$key}->{"time_start"} = get_datestr() ; 
+		}
+
 	} # if status ...
 }
 

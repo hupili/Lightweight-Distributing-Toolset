@@ -38,7 +38,7 @@ our %h_limit = (
 	max_cpu_night => 1000, 
 	max_cpu_me_day => 1000, 
 	max_cpu_me_night => 1000, 
-	max_dtask_day => 5, 
+	max_dtask_day => 1, 
 	max_dtask_night => 1, 
 ) ;
 
