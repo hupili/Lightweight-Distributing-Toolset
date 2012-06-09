@@ -15,6 +15,7 @@ if ( -e "lock/$lock" ){
 	exit 255 ;
 }
 
+`mkdir -p lock` ;
 `touch lock/$lock` ;
 `echo \`date\` >> lock/$lock` ;
 `echo $message >> lock/$lock` ;
