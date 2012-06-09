@@ -11,8 +11,13 @@ use List::Util ("shuffle", "sum") ;
 
 sub get_machine_ok{
 	my @tmp = () ;
+	print ">>start monitor:", `date` ;
 	`./monitor.pl` ;
+	print ">>end monitor:", `date` ;
+	print ">>start stat:", `date` ;
 	`./statistics.pl` ;
+	print ">>end stat:", `date` ;
+	print ">>start analyze:", `date` ;
 	my $ref_machine = retrieve 'storable.stat.machine' ;
 	my $cur_time = get_datestr() ;
 	my $hour = substr($cur_time, 7, 2) ;
@@ -46,6 +51,7 @@ sub get_machine_ok{
 			#print Dumper($m) ;				
 		}
 	}
+	print ">>end analyze:", `date` ;
 	return @tmp ;
 }
 
@@ -74,6 +80,7 @@ if ( ! -e "storable.task.data" ){
 my $ref_task = retrieve 'storable.task.data' ;
 
 #==== add new task ====
+print ">>start add new:", `date` ;
 my @a_new = `ls -1 $dir_task.new` ;
 for my $new_task(@a_new){
 	chomp($new_task) ;
@@ -85,10 +92,12 @@ for my $new_task(@a_new){
 	$ref_task->{$uuid} = $ref_newtask ;
 	`mv $dir_nt $dir_task` ;
 }
+print ">>end add new:", `date` ;
 
 my @a_machine_ok = () ;
 
 #==== run new task ====
+print ">>start run new:", `date` ;
 for my $key(keys %$ref_task){
 	my %cur_task = %{$ref_task->{$key}} ;
 	if ( $cur_task{"status"} eq "new" ){
@@ -158,11 +167,13 @@ for my $key(keys %$ref_task){
 
 	} # if status ...
 }
+print ">>end run new:", `date` ;
 
 #==== check running tasks
 
-my $cmd_check_running = "" ;
+print ">>start check running:", `date` ;
 
+my $cmd_check_running = "" ;
 for my $key(keys %$ref_task){
 	my %cur_task = %{$ref_task->{$key}} ;
 	if ( $cur_task{"status"} eq "running" ){
@@ -228,7 +239,10 @@ for my $key(@a_finished){
 	}
 }
 
+print ">>end check running:", `date` ;
+
 #==== check finished/killed tasks
+print ">>start check finished:", `date` ;
 for my $key(keys %$ref_task){
 	my %cur_task = %{$ref_task->{$key}} ;
 	if ( $cur_task{"status"} eq "finish" 
@@ -246,6 +260,7 @@ for my $key(keys %$ref_task){
 		}
 	}
 }
+print ">>end check finished:", `date` ;
 
 #==== store the task data
 
