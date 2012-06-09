@@ -128,3 +128,18 @@ Here I list those key points:
    After one round of 'while... read...', the pipe becomes 
    invalid at the parent side. If we do not re-open it, we 
    can not read anything child processes write to it later...
+
+
+20120609
+----
+
+The return value of system has the same structure as
+the return value of waitpid. 
+Lower 8bit is the status of waitpid. It is usually 
+0 due to successful locally waiting of child process. 
+The higher bit is the return status of command series 
+inside system call. 
+
+For 'ssh' command, it returns 255 on failure of connection, 
+authentication, etc. It returns the status of command 
+inside 'ssh' on other conditions. 
