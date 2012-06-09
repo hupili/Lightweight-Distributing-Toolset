@@ -20,7 +20,7 @@ my %h_user = () ;
 my %h_machine = () ;
 
 for my $peer(keys %h_peer){
-	$h_machine{$peer}->{"$myuser"} = 0 ;
+	$h_machine{$peer}->{"myuser"} = 0 ;
 	$h_machine{$peer}->{"available"} = 0 ;
 	for my $record(@{$h_peer{$peer}}){
 		$h_user{$record->{"user"}}->{"task"} ++ ;	

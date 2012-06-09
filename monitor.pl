@@ -29,8 +29,8 @@ for (@a_ps){
 		next ;
 	}
 	#print $line, "\n" ;
-	if ( $line =~ /\[$cur_peer\]\[end:(\d+)\]/ ){
-		if ( $1 eq 0 ){
+	if ( $line =~ /\[$cur_peer\]\[end:(\d+),(\d+)\]/ ){
+		if ( $1 eq 0 && $2 eq 0 ){
 			push @a_available, $cur_peer ;
 		}
 		next ;
