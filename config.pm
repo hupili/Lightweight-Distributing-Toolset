@@ -26,8 +26,8 @@ $gap_new_task
 our $gap_new_task = 1 ;
 
 our $multi_exe_timeout = 100 ; #seconds
-our $multi_exe_count = 5 ; #concurrent process
-our $multi_scp_timeout = 100 ; #seconds
+our $multi_exe_count = 10 ; #concurrent process
+our $multi_scp_timeout = 1200 ; #seconds
 our $multi_scp_count = 5 ; #concurrent process
 
 our $dir_task = "task" ;
