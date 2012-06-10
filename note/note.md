@@ -247,3 +247,57 @@ to test whether a machine is functioning well.
 
 'config.pm' is the only place to read 'host.list'. 
 'monitor.pl' seems the right place to remove one machine. 
+
+20120610. Pipe failure of multiprocess
+----
+
+Note a strange bug fix:
+```
++my @a_input = () ;
+while (<STDIN>){
++       chomp ;
++       push @a_input, $_ ;
++}
++
++for (@a_input){
+	if ( /^\s*$/ ){
+		next ;          
+	}
+```
+
+The original approach is to read from <STDIN> 
+directly. When there are many waiting process, 
+it seems the pipeline fails. Then only part of 
+those commands are executed. This is a blind point
+of my original test of multiprocess. I didn't try 
+the case when timeout commands are of dominant number. 
+
+20120610. Test on more WAN machines
+----
+
+```
+$date ; ./monitor.pl ; date
+Sun Jun 10 22:27:21 HKT 2012
+Sun Jun 10 22:29:15 HKT 2012
+$wc -l host.list.available 
+70 host.list.available
+$date ; ./monitor.pl ; date ; wc -l host.list.available
+Sun Jun 10 22:29:42 HKT 2012
+Sun Jun 10 22:30:22 HKT 2012
+70 host.list.available
+$date ; ./monitor.pl ; date ; wc -l host.list.available
+Sun Jun 10 22:32:11 HKT 2012
+Sun Jun 10 22:32:57 HKT 2012
+70 host.list.available
+$date ; ./monitor.pl ; date ; wc -l host.list.available
+Sun Jun 10 22:33:30 HKT 2012
+Sun Jun 10 22:33:54 HKT 2012
+70 host.list.available
+$date ; ./monitor.pl ; date ; wc -l host.list.available
+Sun Jun 10 22:38:45 HKT 2012
+Sun Jun 10 22:39:17 HKT 2012
+70 host.list.available
+```
+
+The executioni time is still in controlable range. 
+It should scale to a hundred machines.

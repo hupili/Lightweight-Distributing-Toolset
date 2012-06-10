@@ -155,7 +155,13 @@ sub check_and_wait{
 
 print_log($_notice, `date` . ":start multiprocess\n") ;
 
+my @a_input = () ;
 while (<STDIN>){
+	chomp ;
+	push @a_input, $_ ;
+}
+
+for (@a_input){
 	if ( /^\s*$/ ){
 		next ;		
 	}
