@@ -21,6 +21,8 @@ $multi_exe_count
 $multi_scp_timeout
 $multi_scp_count
 $gap_new_task
+$fn_host_candidate
+$fn_hostlist
 ) ;
 
 our $gap_new_task = 1 ;
@@ -48,9 +50,16 @@ our $dir_execute = $Bin ;
 #used for monitor, important....
 our $myuser = "hpl011" ;
 
+#====== calculate candidate hosts ====
 our @a_host = () ;
 our %h_host = () ;
-my $fn_hostlist = "host.list" ;
+our $fn_host_candidate = "host.list" ;
+our $fn_hostlist = "host.list.available" ;
+
+if ( ! -e $fn_hostlist ){
+	`cp -f $fn_host_candidate $fn_hostlist` ;
+}
+
 for my $line(`cat $fn_hostlist`){
 	chomp($line) ;
 	my @a_line = split "\t", $line ;

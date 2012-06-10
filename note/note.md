@@ -234,3 +234,16 @@ The bottleneck appears to be './monitor.pl'.
 I think it is due to the bulk 'ps aux' data 
 transferred back. 
 
+20120610
+----
+
+The 'monitor.pl' script get stuck mainly because 
+some machines becomes unavailable. So the 'multiprocess.pl'
+wait for a whole timeour period and kill that process. 
+To accelerate the probing procedure, I should introduce 
+the concept of candiate hosts. Users configure candidate 
+host list and another checking script will run periodically 
+to test whether a machine is functioning well. 
+
+'config.pm' is the only place to read 'host.list'. 
+'monitor.pl' seems the right place to remove one machine. 
