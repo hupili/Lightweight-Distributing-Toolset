@@ -9,6 +9,6 @@ my $ARGC = @ARGV ;
 
 my ($target, $remote, $local) = @ARGV ;
 my $home = $h_host{$target}->{"home"} ;
-my $ret = system qq( scp -r "$target:$home/$remote" $local ) ;
+my $ret = system qq( scp -C -r "$target:$home/$remote" $local ) ;
 
 exit $ret ;
