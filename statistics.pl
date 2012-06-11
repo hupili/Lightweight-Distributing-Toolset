@@ -41,6 +41,12 @@ for my $m(@$ref_available){
 	$h_machine{$m}->{"available"} = 1 ;
 }
 
+#20120611, not inconsistency
+#If a dtask is running when the machine goes off, 
+#we can retrieve the machine name from ref_task. 
+#However, from the former monitor result, this machine
+#is unavailable. Thus the field $h_machine{$m}->{available} 
+#is invalid. 
 for my $p(values %$ref_task){
 	my $m = $p->{"machine"} ;	
 	if ( ! defined($m) ){

@@ -301,3 +301,26 @@ Sun Jun 10 22:39:17 HKT 2012
 
 The executioni time is still in controlable range. 
 It should scale to a hundred machines.
+
+20120610
+----
+
+NOte some latest problem:
+```
+Use of uninitialized value in string eq at ./task-update.pl line 43.
+>>end analyze:Sun Jun 10 23:36:43 HKT 2012
+no ok machines now! stop scheduling new dtasks
+>>end run new:Sun Jun 10 23:36:43 HKT 2012
+>>start check running:Sun Jun 10 23:36:43 HKT 2012
+Use of uninitialized value $home in concatenation (.) or string at ./task-update.pl line 183.
+Use of uninitialized value in string eq at ./task-update.pl line 186.
+Use of uninitialized value $home in concatenation (.) or string at ./task-update.pl line 192.
+```
+This happens when one machine was once available, 
+but later becomes unavailable can is deleted 
+by 'monitor.pl' script. 
+
+I need to refactor the machine monitoring part and 
+machine benchmarking part. 
+
+

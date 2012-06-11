@@ -40,7 +40,10 @@ sub get_machine_ok{
 		my $m = $ref_machine->{$mkey} ;
 		#print Dumper($m) ;	
 		#check if this machine is available ;
-		if ($m->{"available"} eq 1 
+		#TODO:check under what condition 
+		#the "available" field does not exist
+		if ( exists $m->{"available"} 
+			&& $m->{"available"} eq 1 
 			&& $m->{"cpu"} < $max_cpu 
 			&& $m->{"myuser"} < $max_cpu_me 
 			&& $m->{"dtask"} < $max_dtask){
@@ -163,6 +166,10 @@ for my $key(keys %$ref_task){
 			$ref_task->{$key}->{"status"} = "running" ;
 			$ref_task->{$key}->{"machine"} = $hostname ;
 			$ref_task->{$key}->{"time_start"} = get_datestr() ; 
+		} else {
+			#TODO: it fails here most probably due to 
+			#uninitialized machines. 
+			last ;
 		}
 
 	} # if status ...
@@ -178,6 +185,11 @@ for my $key(keys %$ref_task){
 	my %cur_task = %{$ref_task->{$key}} ;
 	if ( $cur_task{"status"} eq "running" ){
 		my $machine = $cur_task{"machine"} ;
+		if ( ! exists $h_host{$machine} ){
+			#TODO:this is the deleted machine
+			#try to find more mature way of handling this case
+			next ;
+		}
 		my $uuid = $cur_task{"uuid"} ;
 		my $home = $h_host{$machine}->{"home"} ;
 		my $working = "$home/$uuid" ;
@@ -264,8 +276,8 @@ print ">>end check finished:", `date` ;
 
 #==== store the task data
 
-print "=== current task data:\n" ;
-print Dumper($ref_task) ;
+#print "=== current task data:\n" ;
+#print Dumper($ref_task) ;
 store $ref_task, 'storable.task.data' ;
 
 #==== clean up working environment ====
