@@ -56,14 +56,14 @@ for (@a_ps){
 }
 
 #===== update available machines
-open f_host_avail, ">$fn_hostlist" ;
-for (@a_available){
-	my $hostname = $h_host{$_}->{"hostname"} ;
-	my $system = $h_host{$_}->{"system"} ;
-	my $home = $h_host{$_}->{"home"} ;
-	print f_host_avail "$hostname\t$system\t$home\n" ;
-}
-close f_host_avail ;
+#open f_host_avail, ">$fn_hostlist" ;
+#for (@a_available){
+#	my $hostname = $h_host{$_}->{"hostname"} ;
+#	my $system = $h_host{$_}->{"system"} ;
+#	my $home = $h_host{$_}->{"home"} ;
+#	print f_host_avail "$hostname\t$system\t$home\n" ;
+#}
+#close f_host_avail ;
 
 #====
 #print Dumper(\%h_peer) ;
