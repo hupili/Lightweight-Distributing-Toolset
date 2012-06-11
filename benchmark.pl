@@ -54,7 +54,7 @@ my $multi_ssh = "" ;
 for (values %h_host_candidate){
 	my $hostname = $_->{"hostname"} ;
 	$multi_ping .= qq(ping -c 1 -W 10 $hostname ; echo \$? > $tmp/ping/$hostname \n) ;
-	$multi_ssh .= qq(ssh $hostname 'hostname; pwd; whoami; ps' ; echo \$? > $tmp/ssh/$hostname \n) ;
+	$multi_ssh .= qq(ssh -o ConnectTimeout=10 $hostname 'hostname; pwd; whoami; ps' ; echo \$? > $tmp/ssh/$hostname \n) ;
 }
 
 open f_multi, ">$tmp/multi_ping" ;

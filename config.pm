@@ -46,13 +46,13 @@ our $multi_scp_count = 20 ; #concurrent process
 our $multi_bm_count = 100 ;
 our $multi_bm_timeout = 100 ;
 our $multi_bm_put_count = 30 ;
-our $multi_bm_put_timeout = 18 ; #finish 1.7M file at 10 KB/s rate
+our $multi_bm_put_timeout = 180 ; #finish 1.7M file at 10 KB/s rate
 our $multi_bm_put_bw = 2000 ; # Kbits/s
 our $multi_bm_get_count = 30 ;
-our $multi_bm_get_timeout = 18 ; #finish 1.7M file at 10 KB/s rate
+our $multi_bm_get_timeout = 180 ; #finish 1.7M file at 10 KB/s rate
 our $multi_bm_get_bw = 2000 ; # Kbits/s
 
-our $bm_rand_num = 10000 ;
+our $bm_rand_num = 100000 ;
 our $bm_get_limit = 10000 ; #10KB/s
 our $bm_put_limit = 10000 ;
 

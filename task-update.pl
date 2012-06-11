@@ -265,7 +265,7 @@ for my $key(keys %$ref_task){
 			join(".", $cur_task{"name"}, $cur_task{"time"}, $cur_task{"uuid"}) ;
 		store \%cur_task, "$dir_local/storable.task.end" ;
 		my $ret = system qq( mv $dir_local $dir_task.finish/) ;
-		print "moving $dir_local : $ret\n" ;
+		#print "moving $dir_local : $ret\n" ;
 		if ( $ret == 0 ){
 			#yeah! the task cycle eventually finished. 
 			delete $ref_task->{$key} ;
