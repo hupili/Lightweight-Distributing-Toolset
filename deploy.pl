@@ -29,6 +29,10 @@ for (`cd $tmp/result ; ls -1 .`){
 	print "$f:$r\n" ;
 }
 
+print "rmr tools result====\n" ;
+system qq( ./execute-all.pl 'rm -rf tools' ) ;
+
+
 print "copy 'tools' result====\n" ;
 my $ret = system qq(./put-all.pl tools tools) ;
 
