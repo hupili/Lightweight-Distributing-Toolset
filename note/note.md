@@ -323,4 +323,11 @@ by 'monitor.pl' script.
 I need to refactor the machine monitoring part and 
 machine benchmarking part. 
 
+20120611
+----
 
+Next critical upgrade: use multiprocess to accomplish file copying 
+tasks in task-update.pl. Current design may cause a program stuck
+if one machine is extremely slow in uploading data. For example, 
+it took about 5 hours for one machine to upload its crawled data 
+to my master machine today. 
