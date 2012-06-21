@@ -62,13 +62,16 @@ sub get_machine_ok{
 #============ main =========
 
 #==== check lock to avoid multiple update.pl running====
-my $mylock = "lock/update.pl.lock" ;
-if ( -f $mylock ){
-	print STDERR "update.pl.lock exists! exit..\n" ;
+my $lock_ret = system("./lock.pl update.pl.lock task-kill") ;
+if ( $lock_ret != 0 ){
 	exit(-1) ;
 }
-
-`echo \`date\` > $mylock` ;
+#$my $mylock = "lock/update.pl.lock" ;
+#$if ( -f $mylock ){
+#$	print STDERR "update.pl.lock exists! exit..\n" ;
+#$	exit(-1) ;
+#$}
+#$`echo \`date\` > $mylock` ;
 
 #==== init environment ====
 
@@ -285,6 +288,7 @@ store $ref_task, 'storable.task.data' ;
 `rm -rf $tmp` ;
 
 #==== unlock 
-`rm -f $mylock` ;
+system("./unlock.pl update.pl.lock") ;
+#`rm -f $mylock` ;
 
 exit 0 ;

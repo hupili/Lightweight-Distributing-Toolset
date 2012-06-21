@@ -331,3 +331,37 @@ tasks in task-update.pl. Current design may cause a program stuck
 if one machine is extremely slow in uploading data. For example, 
 it took about 5 hours for one machine to upload its crawled data 
 to my master machine today. 
+
+20120621
+----
+
+A bug, lock is not released. 
+
+The script has been stuck for two days....
+
+```
+116009 [begin]Tue Jun 19 04:11:01 HKT 2012
+116010 [end]Tue Jun 19 04:14:13 HKT 2012 :255
+116011 [begin]Tue Jun 19 04:16:01 HKT 2012
+116012 [end]Tue Jun 19 04:16:01 HKT 2012 :255
+116013 [begin]Tue Jun 19 04:21:01 HKT 2012
+116014 [end]Tue Jun 19 04:21:01 HKT 2012 :255
+```
+
+The update script has some path to not release the lock
+after about 3 minites later:
+```
+$cat lock/update.pl.lock 
+Tue Jun 19 04:11:01 HKT 2012
+```
+
+Manual review the 'task-update.pl' script. 
+Nothing found. Only two 'exit' calls. One 
+maps to the locking failure, and another 
+maps to the successful exit. 
+No 'die' calls. It seems some execution 
+in the middle caused this failure. 
+STERR is redirected to NULL. 
+
+No further information. Only change the locking
+and unlocking to standard interface scripts. 
