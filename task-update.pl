@@ -62,7 +62,7 @@ sub get_machine_ok{
 #============ main =========
 
 #==== check lock to avoid multiple update.pl running====
-my $lock_ret = system("./lock.pl update.pl.lock task-kill") ;
+my $lock_ret = system("./lock.pl update.pl.lock task-update") ;
 if ( $lock_ret != 0 ){
 	exit(-1) ;
 }
