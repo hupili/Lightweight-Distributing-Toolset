@@ -75,6 +75,7 @@ if ( $lock_ret != 0 ){
 
 #==== init environment ====
 
+`rm -rf $tmp/result` ;
 `mkdir -p $tmp/result` ;
 
 #==== load task record file ===

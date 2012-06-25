@@ -365,3 +365,24 @@ STERR is redirected to NULL.
 
 No further information. Only change the locking
 and unlocking to standard interface scripts. 
+
+20120625
+----
+
+Debug the abnormal abort problem. 
+
+The log from stderr
+```
+Can't use an undefined value as a HASH reference at ./task-update.pl line 221
+```
+
+Phenomenon: 
+check running succeed; task tested finished;
+result is fetched; then failed.
+
+OK, the bug is found to be caused by tmp data pollution. 
+The tmp folder should be cleaned first!!
+Fix as:
+```
+78 `rm -rf $tmp/result` ;
+```
