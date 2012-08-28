@@ -13,8 +13,8 @@ our $_kill_signal = 9 ;
 
 our $_fatal = 1 ;
 our $_warning = 2 ;
-our $_notice = 3 ;
-our $_debug = 4 ;
+our $_notice = 4 ;
+our $_debug = 8 ;
 #our $_output_level = $_fatal | $_warning | $_notice | $_debug ;
 our $_output_level = $_fatal | $_warning | $_notice ;
 
